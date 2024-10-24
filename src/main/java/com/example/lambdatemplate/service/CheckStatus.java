@@ -1,6 +1,10 @@
 package com.example.lambdatemplate.service;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,7 +29,7 @@ public class CheckStatus {
         this.emailOnError = emailOnError;
     }
     //Download Existing S3 Logging File
-    public String downloadLogFilesFromS3(String bucketName, String logFileKey){
+    public String downloadLogFilesFromS3(String bucketName, String logFileKey) throws IOException{
         try{
             GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
@@ -47,12 +51,25 @@ public class CheckStatus {
                     //Add in code here to trigger the next lambda function
                 } else {
                     log.info("Prior Applicaiton Failed");
+                    File LogFile = createTempFile(fileContent);
+                    emailOnError.sendErrorEmail(
+                        "Adamjm1220@gmail.com",
+                        "Appllication Fail",
+                        "There was an error in the app",
+                        LogFile);
+
                     //Add in code here to trigger an email as we will have an error message
                     //Prevent next service form kicking off
                 }
                 return status;
             } else {
                 log.warn("No Records were found in the log file");
+                File LogFile = createTempFile(fileContent);
+                    emailOnError.sendErrorEmail(
+                        "Adamjm1220@gmail.com",
+                        "No Logs found in file",
+                        "There was an error reading log file or log file was empty",
+                        LogFile);
                 //Email method add here for email sending for Missing file errors - this will only be if the logging file is empty or non existant
                 //body of message is custom message
                 //include as an attachment the 
@@ -63,6 +80,16 @@ public class CheckStatus {
             log.error("Log file not found, creating a new log file.", e);
             return ""; // Return empty if log file not found
         }
+    }
+    private File createTempFile(List<String> content) throws IOException{
+        File tempFile = File.createTempFile("Logs", ".csv");
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))){
+            for (String line : content){
+                writer.write(line);
+                writer.newLine();
+            }
+        }
+        return tempFile;
     }
 
 }

@@ -8,13 +8,4 @@ import org.springframework.stereotype.Component;
 @Component
 public class ServiceTrigger {
     private static final Logger log = LoggerFactory.getLogger(ServiceTrigger.class);
-
-    
-
-
-
-
-
-
-
 }

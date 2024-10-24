@@ -1,5 +1,14 @@
 spring:
   application:
     name: template
-api:  
-  key: ${API_KEY}
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ajindustrytech@gmail.com
+    password: bljw yajy bsbq npqz
+    properties:
+      mail: 
+        smtp:
+          auth: true
+          starttls:
+            enable: true

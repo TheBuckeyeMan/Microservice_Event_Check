@@ -1,5 +1,7 @@
 package com.example.lambdatemplate.api.Handler;
 
+import java.io.IOException;
+
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -20,7 +22,13 @@ public class LambdaHandler implements RequestHandler<Object, Object> {
 
     @Override
     public Object handleRequest(final Object input, final Context context) {
-        checkStatus.downloadLogFilesFromS3("logging-event-driven-bucket-1220-16492640", "Testing/Test.csv");
+        try {
+            checkStatus.downloadLogFilesFromS3("logging-event-driven-bucket-1220-16492640", "Testing/Test.csv");
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+   
         //Add additional Service Methods Here
         return "Status Check Successfully Occured";
     }
