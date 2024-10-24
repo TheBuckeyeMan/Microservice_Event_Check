@@ -1,5 +1,3 @@
 spring:
   application:
     name: template
-api:  
-  key: ${API_KEY}
