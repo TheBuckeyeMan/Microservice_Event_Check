@@ -1,0 +1,60 @@
+#Template Workflow for Java API's
+name: Java CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - master
+      - UAT
+      - <Your_branch_name_here> #Add additional branches if we neeed to add additional branches
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest 
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v1
+        with:
+          java-version: '21'
+
+      - name: Build with Maven
+        run: mvn compile dependency:copy-dependencies -DincludeScope=runtime
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Logging into Docker Hub...
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Building Docker Image... # Edit regions if you would like to deploy to different regions
+        run: |
+          docker build -t <dockerhub username>/<dockerhub repository>:<name_you_want_your_image_to_be> .
+          docker tag <dockerhub username>/<dockerhub repository>:<name_you_want_your_image_to_be> ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.<Your AWS_Region ex: us-east-2>.amazonaws.com/<Your ECR Name>:<Your Image Name in ECR>
+
+      - name: Push Docker image to Docker Hub
+        run: |
+          docker push <dockerhub username>/<dockerhub repository>:<name_you_want_your_image_to_be>
+
+      - name: Configuring AWS Credentials...
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+        run: |
+          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+          aws configure set default.region <Your AWS_Region ex: us-east-2>
+          aws ecr get-login-password --region <Your AWS_Region ex: us-east-2> | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.<Your AWS_Region ex: us-east-2>.amazonaws.com
+
+      - name: Pushing Docker Image to ECR...
+        run: |
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.<Your AWS_Region ex: us-east-2>.amazonaws.com/<Your ECR Name>:<Your Image Name in ECR>
