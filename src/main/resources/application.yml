@@ -2,13 +2,15 @@ spring:
   application:
     name: template
   mail:
-    host: smtp.gmail.com
+    host: ${EMAIL_HOST:smtp.gmail.com}
     port: 587
-    username: ajindustrytech@gmail.com
-    password: bljw yajy bsbq npqz
+    username: ${EMAIL}
+    password: ${EMAIL_KEY}
     properties:
       mail: 
         smtp:
           auth: true
           starttls:
             enable: true
+variables:
+  emailto: ${EMAIL_TO}

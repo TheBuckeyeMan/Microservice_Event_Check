@@ -17,12 +17,16 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.S3Client;
 import com.example.lambdatemplate.service.EmailOnError;
+import org.springframework.beans.factory.annotation.Value;
 
 @Component
 public class CheckStatus {
     private static final Logger log = LoggerFactory.getLogger(CheckStatus.class);
     private final S3Client s3Client;
     private final EmailOnError emailOnError;
+    
+    @Value("${variables.emailto}")
+    String emailRecipiant;
 
     public CheckStatus(S3Client s3Client, EmailOnError emailOnError){
         this.s3Client = s3Client;
@@ -45,17 +49,18 @@ public class CheckStatus {
             if (!fileContent.isEmpty()){
                 log.info("This is the content of the donwloaded S3 Bucket" + fileContent); //Print the file context
                 String status = fileContent.get(fileContent.size() - 1);
+                String serviceName = getServiceName(status);
                 log.info("The Status is: " + status);
                 if (status.contains("Success")){
-                    log.info("Prior Application Succeeded");
+                    log.info("Prior Application: " + serviceName + " Succeeded");
                     //Add in code here to trigger the next lambda function
                 } else {
-                    log.info("Prior Applicaiton Failed");
+                    log.info("Prior Applicaiton: " + serviceName + " Failed");
                     File LogFile = createTempFile(fileContent);
                     emailOnError.sendErrorEmail(
-                        "Adamjm1220@gmail.com",
-                        "Appllication Fail",
-                        "There was an error in the app",
+                        emailRecipiant,//here we are trying to figure out whats ging on
+                        "Appllication Error At: " + serviceName,
+                        "The application: " + serviceName +" has failed and required investigation. All downstreem services have been temporatily deactivated untill the issue has been fixed",
                         LogFile);
 
                     //Add in code here to trigger an email as we will have an error message
@@ -65,14 +70,12 @@ public class CheckStatus {
             } else {
                 log.warn("No Records were found in the log file");
                 File LogFile = createTempFile(fileContent);
+                System.out.println("RECIPIANT CHECK: " + System.getenv("EMAIL_TO")); //check for the value
                     emailOnError.sendErrorEmail(
-                        "Adamjm1220@gmail.com",
-                        "No Logs found in file",
-                        "There was an error reading log file or log file was empty",
+                        emailRecipiant, //here we are trying to figure out whats ging on
+                        "Logging Error",
+                        "The logging error can be caused by a few reason. 1. The logging bucket does not exist as specified in the Email service. 2. The logging buckets contents are empty and do not include any records.",
                         LogFile);
-                //Email method add here for email sending for Missing file errors - this will only be if the logging file is empty or non existant
-                //body of message is custom message
-                //include as an attachment the 
                 return "No Records Found";
             }
             
@@ -90,6 +93,12 @@ public class CheckStatus {
             }
         }
         return tempFile;
+    }
+    private String getServiceName(String status){
+        if (status.contains("On: ")){
+            return status.substring(status.indexOf("On: ") + 4).trim();
+        }
+        return "Service Unidentified";
     }
 
 }
