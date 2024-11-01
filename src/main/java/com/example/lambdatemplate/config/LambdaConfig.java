@@ -36,6 +36,15 @@ public class LambdaConfig {
     }
     @Bean
     public JavaMailSender getJavaMailSender() {
+        System.out.println("EMAIL CHECK ENV: " + System.getenv("EMAIL"));
+        System.out.println("EMAILKEY CHECK ENV: " + System.getenv("EMAIL_KEY"));
+        System.out.println("HOST CHECK ENV: " + System.getenv("EMAIL_HOST")); //check for the env variable
+        System.out.println("EMAIL CHECK PROP: " + email);
+        System.out.println("EMAILKEY CHECK PROP: " + emailkey);
+        System.out.println("HOST CHECK PROP: " + smtp); //check for the env variable
+        log.info("Logger EMAIL CHECK PROP: " + email);
+        log.info("Logger EMAIL CHECK PROP: " + emailkey);
+        log.info("Logger EMAIL CHECK PROP: " + smtp);
 
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         mailSender.setHost(smtp);

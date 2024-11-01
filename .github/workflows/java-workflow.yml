@@ -6,7 +6,7 @@ on:
     branches:
       - master
       - UAT
-      - <Your_branch_name_here> #Add additional branches if we neeed to add additional branches
+      - Working_Email_Code_Locally #Add additional branches if we neeed to add additional branches
 
 jobs:
   build-and-deploy:
@@ -28,6 +28,7 @@ jobs:
           EMAIL: ${{ secrets.EMAIL }}
           EMAIL_KEY: ${{ secrets.EMAIL_KEY }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
           
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -40,12 +41,12 @@ jobs:
 
       - name: Building Docker Image... # Edit regions if you would like to deploy to different regions
         run: |
-          docker build -t <dockerhub username>/<dockerhub repository>:<name_you_want_your_image_to_be> .
-          docker tag <dockerhub username>/<dockerhub repository>:<name_you_want_your_image_to_be> ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.<Your AWS_Region ex: us-east-2>.amazonaws.com/<Your ECR Name>:<Your Image Name in ECR>
+          docker build -t thebuckeyeman20/api:deleteapi .
+          docker tag thebuckeyeman20/api:deleteapi ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/youtube-containers:deleteapi
 
       - name: Push Docker image to Docker Hub
         run: |
-          docker push <dockerhub username>/<dockerhub repository>:<name_you_want_your_image_to_be>
+          docker push thebuckeyeman20/api:deleteapi
 
       - name: Configuring AWS Credentials...
         env:
@@ -55,9 +56,9 @@ jobs:
         run: |
           aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-          aws configure set default.region <Your AWS_Region ex: us-east-2>
-          aws ecr get-login-password --region <Your AWS_Region ex: us-east-2> | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.<Your AWS_Region ex: us-east-2>.amazonaws.com
+          aws configure set default.region us-east-2
+          aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com
 
       - name: Pushing Docker Image to ECR...
         run: |
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.<Your AWS_Region ex: us-east-2>.amazonaws.com/<Your ECR Name>:<Your Image Name in ECR>
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/youtube-containers:deleteapi
