@@ -62,3 +62,20 @@ jobs:
       - name: Pushing Docker Image to ECR...
         run: |
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/youtube-containers:deleteapi
+
+
+      - name: Creating Terraform Infrastructure
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const octokit = require('@actions/github').getOctokit(process.env.GITHUB_TOKEN);
+            await octokit.repos.createDispatchEvent({
+              owner: 'TheBuckeyeMan',
+              repo: 'Finalized_API_IAC',
+              event_type: 'trigger-iac-workflow',
+              client_payload: {
+                branch: 'delete' # Replace 'main' with your desired branch
+              }
+            });
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
