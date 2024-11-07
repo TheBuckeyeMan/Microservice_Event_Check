@@ -69,7 +69,7 @@ jobs:
         run: |
           repo_owner="TheBuckeyeMan"
           repo_name="Finalized_API_IAC"
-          workflow_id="cd.yml" 
+          workflow_id="ci.yml" 
 
           echo "Sending workflow_dispatch to $repo_owner/$repo_name on branch delete"
 
