@@ -71,6 +71,11 @@ jobs:
           repo_name="Finalized_API_IAC"
           workflow_id="cd.yml" 
 
+          curl -L \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer $CICD_GH_TOKEN" \
+          https://api.github.com/repos/$repo_owner/$repo_name/actions/workflows
+
           echo "Sending workflow_dispatch to $repo_owner/$repo_name on branch lambda"
 
           curl -L \
