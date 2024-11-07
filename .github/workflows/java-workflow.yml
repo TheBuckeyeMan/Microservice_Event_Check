@@ -33,7 +33,6 @@ jobs:
           path: .
 
 
-
   Docker_Build:
     runs-on: ubuntu-latest
     needs: Maven_Build
@@ -49,7 +48,6 @@ jobs:
       - name: Building Docker Image... # Edit regions if you would like to deploy to different regions
         run: |
           docker build -t thebuckeyeman20/api:PlaceholderContainer .
-          docker tag thebuckeyeman20/api:PlaceholderContainer ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/youtube-containers:PlaceholderContainer
     
       - name: Save Docker Image as Artifact
         run: |
@@ -87,7 +85,7 @@ jobs:
           docker push thebuckeyeman20/api:PlaceholderContainer
 
 
-  AWS_ECR__Push:
+  AWS_ECR_Push:
     runs-on: ubuntu-latest
     needs: Docker_Build
     steps:
@@ -99,7 +97,7 @@ jobs:
       - name: Load Docker Image
         run: |
           docker load -i image.tar
-          
+
       - name: Re-tag Docker Image for ECR
         run: |
           docker tag thebuckeyeman20/api:PlaceholderContainer ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/youtube-containers:PlaceholderContainer
@@ -119,6 +117,11 @@ jobs:
         run: |
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/youtube-containers:PlaceholderContainer
 
+
+  Deploy_Code:
+    runs-on: ubuntu-latest
+    needs: AWS_ECR_Push
+    steps:
       - name: Provisioning Infrastructure...
         env:
           CICD_GH_TOKEN: ${{ secrets.CICD_GH_TOKEN }}
