@@ -51,11 +51,15 @@ jobs:
           docker build -t thebuckeyeman20/api:PlaceholderContainer .
           docker tag thebuckeyeman20/api:PlaceholderContainer ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/youtube-containers:PlaceholderContainer
     
-      - name: Pass job 2 to job 3
+      - name: Save Docker Image as Artifact
+        run: |
+          docker save -o image.tar thebuckeyeman20/api:PlaceholderContainer
+            
+      - name: Upload Docker Image Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: job2
-          path: .
+          name: docker-image
+          path: image.tar
 
 
 
@@ -63,10 +67,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: Docker_Build
     steps:
-      - name: Download code and Dockerfile
+      
+      - name: Download Docker Image Artifact
         uses: actions/download-artifact@v3
         with:
-          name: job2
+          name: docker-image
 
       - name: Logging into Docker Hub...
         uses: docker/login-action@v2
