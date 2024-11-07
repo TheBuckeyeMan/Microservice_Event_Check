@@ -41,12 +41,12 @@ jobs:
 
       - name: Building Docker Image... # Edit regions if you would like to deploy to different regions
         run: |
-          docker build -t thebuckeyeman20/api:deleteapi .
-          docker tag thebuckeyeman20/api:deleteapi ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/youtube-containers:deleteapi
+          docker build -t thebuckeyeman20/api:PlaceholderContainer .
+          docker tag thebuckeyeman20/api:PlaceholderContainer ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/youtube-containers:PlaceholderContainer
 
       - name: Push Docker image to Docker Hub
         run: |
-          docker push thebuckeyeman20/api:deleteapi
+          docker push thebuckeyeman20/api:PlaceholderContainer
 
       - name: Configuring AWS Credentials...
         env:
@@ -61,7 +61,7 @@ jobs:
 
       - name: Pushing Docker Image to ECR...
         run: |
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/youtube-containers:deleteapi
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/youtube-containers:PlaceholderContainer
 
       - name: Provisioning Infrastructure...
         env:
@@ -69,9 +69,9 @@ jobs:
         run: |
           repo_owner="TheBuckeyeMan"
           repo_name="Finalized_API_IAC"
-          workflow_id="ci.yml" 
+          workflow_id="cd.yml" 
 
-          echo "Sending workflow_dispatch to $repo_owner/$repo_name on branch delete"
+          echo "Sending workflow_dispatch to $repo_owner/$repo_name on branch Lambda"
 
           curl -L \
             -X POST \
@@ -79,4 +79,4 @@ jobs:
             -H "Authorization: Bearer $CICD_GH_TOKEN" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/$repo_owner/$repo_name/actions/workflows/$workflow_id/dispatches \
-            -d "{\"ref\": \"delete\"}"
+            -d "{\"ref\": \"Lambda\"}"
