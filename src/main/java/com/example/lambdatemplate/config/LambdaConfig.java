@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import software.amazon.awssdk.regions.Region;
@@ -17,6 +18,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 @Configuration
 @ComponentScan(basePackages = "com.example.lambdatemplate") //Since its lambda, we need to Manually tell spring to scan all required dependencies for injection
+@PropertySource("classpath:/application.yml")
 public class LambdaConfig {
     private static Logger log = LoggerFactory.getLogger(LambdaConfig.class);
     @Value("${spring.mail.username}")

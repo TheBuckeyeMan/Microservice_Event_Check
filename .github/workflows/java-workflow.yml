@@ -25,10 +25,10 @@ jobs:
         run: mvn clean package dependency:copy-dependencies -DincludeScope=runtime
         env:
           API_KEY: ${{ secrets.API_KEY }}
-          EMAIL: ${{ secrets.EMAIL }}
-          EMAIL_KEY: ${{ secrets.EMAIL_KEY }}
-          EMAIL_TO: ${{ secrets.EMAIL_TO }}
-          EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+          # EMAIL: ${{ secrets.EMAIL }}
+          # EMAIL_KEY: ${{ secrets.EMAIL_KEY }}
+          # EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          # EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
           
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -41,12 +41,12 @@ jobs:
 
       - name: Building Docker Image... # Edit regions if you would like to deploy to different regions
         run: |
-          docker build -t thebuckeyeman20/api:deleteapi .
-          docker tag thebuckeyeman20/api:deleteapi ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/youtube-containers:deleteapi
+          docker build -t thebuckeyeman20/api:PlaceholderContainer .
+          docker tag thebuckeyeman20/api:PlaceholderContainer ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/youtube-containers:PlaceholderContainer
 
       - name: Push Docker image to Docker Hub
         run: |
-          docker push thebuckeyeman20/api:deleteapi
+          docker push thebuckeyeman20/api:PlaceholderContainer
 
       - name: Configuring AWS Credentials...
         env:
@@ -61,21 +61,22 @@ jobs:
 
       - name: Pushing Docker Image to ECR...
         run: |
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/youtube-containers:deleteapi
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/youtube-containers:PlaceholderContainer
 
-
-      - name: Creating Terraform Infrastructure
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const octokit = require('@actions/github').getOctokit(process.env.GITHUB_TOKEN);
-            await octokit.repos.createDispatchEvent({
-              owner: 'TheBuckeyeMan',
-              repo: 'Finalized_API_IAC',
-              event_type: 'trigger-iac-workflow',
-              client_payload: {
-                branch: 'delete' # Replace 'main' with your desired branch
-              }
-            });
+      - name: Provisioning Infrastructure...
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          CICD_GH_TOKEN: ${{ secrets.CICD_GH_TOKEN }}
+        run: |
+          repo_owner="TheBuckeyeMan"
+          repo_name="Finalized_API_IAC"
+          workflow_id="cd.yml" 
+
+          echo "Sending workflow_dispatch to $repo_owner/$repo_name on branch Lambda"
+
+          curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $CICD_GH_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/$repo_owner/$repo_name/actions/workflows/$workflow_id/dispatches \
+            -d "{\"ref\": \"Lambda\"}"
