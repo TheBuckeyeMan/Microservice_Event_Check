@@ -9,7 +9,7 @@ on:
       - Working_Email_Code_Locally #Add additional branches if we neeed to add additional branches
 
 jobs:
-  build-and-deploy:
+  Maven_Build:
     runs-on: ubuntu-latest 
 
     steps:
@@ -29,25 +29,33 @@ jobs:
           # EMAIL_KEY: ${{ secrets.EMAIL_KEY }}
           # EMAIL_TO: ${{ secrets.EMAIL_TO }}
           # EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
-          
+  Docker_Build:
+    runs-on: ubuntu-latest 
+
+    steps:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-
-      - name: Logging into Docker Hub...
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Building Docker Image... # Edit regions if you would like to deploy to different regions
         run: |
           docker build -t thebuckeyeman20/api:PlaceholderContainer .
           docker tag thebuckeyeman20/api:PlaceholderContainer ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/youtube-containers:PlaceholderContainer
 
+  Dockerhub_Push:
+    runs-on: ubuntu-latest 
+    steps:
+      - name: Logging into Docker Hub...
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
       - name: Push Docker image to Docker Hub
         run: |
           docker push thebuckeyeman20/api:PlaceholderContainer
-
+  AWS_ECR_Push:
+    runs-on: ubuntu-latest 
+    steps:
       - name: Configuring AWS Credentials...
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -62,7 +70,9 @@ jobs:
       - name: Pushing Docker Image to ECR...
         run: |
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/youtube-containers:PlaceholderContainer
-
+  Infrastructure_Provisioning:
+    runs-on: ubuntu-latest 
+    steps:
       - name: Provisioning Infrastructure...
         env:
           CICD_GH_TOKEN: ${{ secrets.CICD_GH_TOKEN }}
@@ -70,13 +80,6 @@ jobs:
           repo_owner="TheBuckeyeMan"
           repo_name="Finalized_API_IAC"
           workflow_id="ci.yml" 
-
-          curl -L \
-          -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer $CICD_GH_TOKEN" \
-          https://api.github.com/repos/$repo_owner/$repo_name/actions/workflows
-
-          echo "Sending workflow_dispatch to $repo_owner/$repo_name on branch lambda"
 
           curl -L \
             -X POST \
