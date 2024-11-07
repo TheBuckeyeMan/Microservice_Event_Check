@@ -113,7 +113,7 @@ jobs:
 
       - name: Pushing Docker Image to ECR...
         run: |
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/youtube-containers:PlaceholderContainer
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/youtube-containers:latest
 
       - name: Provisioning Infrastructure...
         env:
